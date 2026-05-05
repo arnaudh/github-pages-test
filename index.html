@@ -91,7 +91,7 @@
       <button id="downloadZipButton" type="button">Download AI task zip</button>
     </div>
     <section id="aiPromptContainer" class="instructions" aria-live="polite">
-      <p>Paste this prompt into your AI tool:</p>
+      <p>Then in your AI tool, give the path to the zip and paste this prompt:</p>
       <textarea id="aiPromptText" readonly></textarea>
       <button id="copyPromptButton" type="button">Copy prompt to clipboard</button>
     </section>
@@ -113,13 +113,7 @@
 6. Display link to expected GitHub Pages URL, saying it should update any minute.
 `;
 
-    const promptForAiTool = `Extract the provided zip file and follow the instructions in instructions.md exactly.
-
-Important requirements:
-- Clone the repository into ~/github-pages-test-clone/
-- Make a small edit to index.html by adding one dummy sentence to the page text
-- Commit and push the change
-- Return the commit hash and a short summary`;
+    const promptForAiTool = `Extract the provided zip file and follow the instructions in instructions.md exactly.`
 
     async function downloadZipFile() {
       if (!window.JSZip) {
