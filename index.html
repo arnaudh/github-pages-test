@@ -33,12 +33,132 @@
       margin-bottom: 0;
       color: #94a3b8;
     }
+    .actions {
+      margin-top: 1.5rem;
+      display: grid;
+      gap: 0.75rem;
+      justify-items: center;
+    }
+    button {
+      border: 1px solid #475569;
+      border-radius: 10px;
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 0.65rem 0.95rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #334155;
+    }
+    .instructions {
+      margin-top: 1rem;
+      text-align: left;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 0.85rem;
+      background: #0b1220;
+      display: none;
+    }
+    .instructions.visible {
+      display: block;
+    }
+    .instructions p {
+      margin: 0 0 0.75rem;
+      color: #cbd5e1;
+    }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #020617;
+      color: #e2e8f0;
+      padding: 0.6rem;
+      box-sizing: border-box;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 0.8rem;
+      resize: vertical;
+    }
   </style>
 </head>
 <body>
   <main>
     <h1>GitHub Pages is live</h1>
     <p>This page is deployed from the <code>github-pages-test</code> repository.</p>
+    <div class="actions">
+      <button id="downloadZipButton" type="button">Download AI task zip</button>
+    </div>
+    <section id="aiPromptContainer" class="instructions" aria-live="polite">
+      <p>Paste this prompt into your AI tool:</p>
+      <textarea id="aiPromptText" readonly></textarea>
+      <button id="copyPromptButton" type="button">Copy prompt to clipboard</button>
+    </section>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    const downloadZipButton = document.getElementById("downloadZipButton");
+    const aiPromptContainer = document.getElementById("aiPromptContainer");
+    const aiPromptText = document.getElementById("aiPromptText");
+    const copyPromptButton = document.getElementById("copyPromptButton");
+
+    const markdownInstructions = `# Task Instructions
+
+1. Clone this repository into \`~/github-pages-test-clone/\`.
+2. Open \`index.html\`.
+3. Add a dummy sentence to the page text under the title (for example: "This is a dummy sentence added by automation.").
+4. Commit the change with a short, clear commit message.
+5. Push the commit to the default branch on GitHub.
+`;
+
+    const promptForAiTool = `Extract the provided zip file and follow the instructions in instructions.md exactly.
+
+Important requirements:
+- Clone the repository into ~/github-pages-test-clone/
+- Make a small edit to index.html by adding one dummy sentence to the page text
+- Commit and push the change
+- Return the commit hash and a short summary`;
+
+    async function downloadZipFile() {
+      if (!window.JSZip) {
+        alert("Unable to create zip: JSZip failed to load.");
+        return;
+      }
+
+      const zip = new JSZip();
+      zip.file("instructions.md", markdownInstructions);
+
+      const zipBlob = await zip.generateAsync({ type: "blob" });
+      const downloadLink = document.createElement("a");
+      downloadLink.href = URL.createObjectURL(zipBlob);
+      downloadLink.download = "github-pages-test-ai-task.zip";
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      downloadLink.remove();
+      URL.revokeObjectURL(downloadLink.href);
+
+      aiPromptText.value = promptForAiTool;
+      aiPromptContainer.classList.add("visible");
+    }
+
+    async function copyPromptText() {
+      try {
+        await navigator.clipboard.writeText(aiPromptText.value);
+        copyPromptButton.textContent = "Copied!";
+        setTimeout(() => {
+          copyPromptButton.textContent = "Copy prompt to clipboard";
+        }, 1200);
+      } catch (error) {
+        alert("Clipboard permission failed. Please copy manually from the text box.");
+      }
+    }
+
+    downloadZipButton.addEventListener("click", () => {
+      downloadZipFile().catch(() => {
+        alert("Could not generate zip file.");
+      });
+    });
+    copyPromptButton.addEventListener("click", copyPromptText);
+  </script>
 </body>
 </html>
